@@ -1,0 +1,12 @@
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\bin\Debug\net9.0\Domain.deps.json
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\bin\Debug\net9.0\Domain.dll
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\bin\Debug\net9.0\Domain.pdb
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\obj\Debug\net9.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\obj\Debug\net9.0\Domain.AssemblyInfoInputs.cache
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\obj\Debug\net9.0\Domain.AssemblyInfo.cs
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\obj\Debug\net9.0\Domain.csproj.CoreCompileInputs.cache
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\obj\Debug\net9.0\Domain.sourcelink.json
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\obj\Debug\net9.0\Domain.dll
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\obj\Debug\net9.0\refint\Domain.dll
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\obj\Debug\net9.0\Domain.pdb
+H:\T2m\Desafio_T2M\DesafioSGP\src\Domain\obj\Debug\net9.0\ref\Domain.dll
