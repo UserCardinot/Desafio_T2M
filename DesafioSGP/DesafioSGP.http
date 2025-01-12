@@ -1,4 +1,4 @@
-@DesafioSGP_HostAddress = http://localhost:5299
+@DesafioSGP_HostAddress = http://localhost:5116
 
 GET {{DesafioSGP_HostAddress}}/weatherforecast/
 Accept: application/json
