@@ -3,6 +3,7 @@ using System;
 using DesafioSGP.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DesafioSGP.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250113161857_AtualizarNomeTabelaProjetos")]
+    partial class AtualizarNomeTabelaProjetos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,21 +35,21 @@ namespace DesafioSGP.Migrations
 
                     b.Property<string>("Descricao")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Nome")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("VARCHAR(255)");
 
-                    b.Property<DateOnly?>("Prazo")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("Prazo")
+                        .HasColumnType("TIMESTAMP");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.ToTable("projetos", (string)null);
+                    b.ToTable("nova_tabela_projetos", (string)null);
                 });
 
             modelBuilder.Entity("DesafioSGP.Domain.Entities.Tarefa", b =>
@@ -57,10 +60,14 @@ namespace DesafioSGP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("DataPrazo")
+                    b.Property<DateTime>("DataPrazo")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -68,14 +75,13 @@ namespace DesafioSGP.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProjetoId");
 
-                    b.ToTable("Tarefas");
+                    b.ToTable("Tarefa");
                 });
 
             modelBuilder.Entity("DesafioSGP.Domain.Entities.User", b =>
@@ -88,22 +94,25 @@ namespace DesafioSGP.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("VARCHAR(255)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("VARCHAR(255)");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("VARCHAR(255)");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("DesafioSGP.Domain.Entities.Tarefa", b =>

@@ -1,27 +1,17 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace DesafioSGP.Domain.Entities
 {
+    [Table("projetos")]
     public class Projeto
     {
         public int Id { get; set; }
-        public string Nome { get; set; } = string.Empty; // Inicializado com string vazia
-        public string Descricao { get; set; } = string.Empty; // Inicializado com string vazia
-        public string Status { get; set; } = string.Empty; // Inicializado com string vazia
-        public DateTime DataInicio { get; set; }
-        public DateTime DataFim { get; set; }
-
-
-        public Projeto(int id, string nome, string descricao, DateTime dataInicio, DateTime dataFim, string status)
-        {
-            Id = id;
-            Nome = nome;
-            Descricao = descricao;
-            DataInicio = dataInicio;
-            DataFim = dataFim;
-            Status = status;
-        }
-
-        public Projeto()
-        {
-        }
+        public string Nome { get; set; }
+        public string Descricao { get; set; }
+        public DateOnly? Prazo { get; set; }
+        public int UserId { get; set; }
+        public List<Tarefa> Tarefas { get; set; } = new List<Tarefa>();
     }
 }
