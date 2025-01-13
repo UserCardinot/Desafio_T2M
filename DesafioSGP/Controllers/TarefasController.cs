@@ -53,7 +53,6 @@ namespace DesafioSGP.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Garantir que a DataPrazo está em UTC
             DateTime? dataPrazoUtc = null;
             if (tarefaRequest.DataPrazo.HasValue)
             {
@@ -70,7 +69,6 @@ namespace DesafioSGP.Controllers
 
             await _tarefaService.AdicionarTarefa(tarefa);
 
-            // Retornando o resultado após a criação
             var tarefaDTO = _mapper.Map<TarefaDTO>(tarefa);
             return CreatedAtAction(nameof(GetTarefaById), new { id = tarefa.Id }, tarefaDTO);
         }
@@ -78,28 +76,24 @@ namespace DesafioSGP.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> AtualizarTarefa(int id, TarefaRequestDTO tarefaRequest)
         {
-            // Convertendo para UTC
             if (tarefaRequest.DataPrazo.HasValue)
             {
                 tarefaRequest.DataPrazo = tarefaRequest.DataPrazo.Value.ToUniversalTime();
             }
 
-            // Verificando se a tarefa existe no banco
             var tarefaExistente = await _tarefaRepository.ObterPorId(id);
             if (tarefaExistente == null)
             {
-                return NotFound(); // Retorna 404 se a tarefa não for encontrada
+                return NotFound();
             }
 
-            // Atualizando os campos da tarefa existente com os dados novos
             tarefaExistente.Descricao = tarefaRequest.Descricao;
             tarefaExistente.ProjetoId = tarefaRequest.ProjetoId;
             tarefaExistente.DataPrazo = tarefaRequest.DataPrazo;
             tarefaExistente.Status = tarefaRequest.Status;
 
-            // Chamada para atualizar a tarefa no repositório
             await _tarefaRepository.Atualizar(tarefaExistente);
-            return Ok(tarefaExistente); // Retorna a tarefa atualizada
+            return Ok(tarefaExistente);
         }
 
         [HttpDelete("{id}")]

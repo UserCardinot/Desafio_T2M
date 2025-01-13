@@ -11,6 +11,6 @@ namespace DesafioSGP.Domain.Interfaces
         Task AddAsync(Projeto projeto);
         Task UpdateAsync(Projeto projeto);
         Task DeleteAsync(int id);
-        Task<IEnumerable<Projeto>> GetProjetosByUserIdAsync(int userId);  // Método adicionado para buscar projetos de um usuário
+        Task<IEnumerable<Projeto>> GetProjetosByUserIdAsync(int userId);
     }
 }

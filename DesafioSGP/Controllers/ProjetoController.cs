@@ -20,7 +20,6 @@ namespace DesafioSGP.API.Controllers
             _mapper = mapper;
         }
 
-        // POST: api/projeto
         [HttpPost]
         public async Task<IActionResult> CriarProjeto([FromBody] ProjetoPUTDTO projetoDto)
         {
@@ -29,20 +28,15 @@ namespace DesafioSGP.API.Controllers
                 return BadRequest("Dados do projeto inválidos.");
             }
 
-            // Mapear o DTO para a entidade Projeto
             var projeto = _mapper.Map<Projeto>(projetoDto);
 
-            // Adicionar o projeto ao banco de dados
             await _projetoRepository.AddAsync(projeto);
 
-            // Mapear o projeto para um DTO de resposta
             var projetoResponse = _mapper.Map<ProjetoDTO>(projeto);
 
-            // Retornar o projeto criado com status de sucesso
             return CreatedAtAction(nameof(ObterProjeto), new { id = projeto.Id }, projetoResponse);
         }
 
-        // GET: api/projeto/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> ObterProjeto(int id)
         {
@@ -60,18 +54,17 @@ namespace DesafioSGP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllProjects()
         {
-            // Obter todos os projetos do repositório
             var projetos = await _projetoRepository.GetAllAsync();
 
             if (projetos == null || !projetos.Any())
             {
-                return NotFound();  // Se não encontrar projetos
+                return NotFound();
             }
 
             // Mapear para o DTO de resposta
             var projetosDto = _mapper.Map<IEnumerable<ProjetoDTO>>(projetos);
 
-            return Ok(projetosDto);  // Retorna os projetos mapeados
+            return Ok(projetosDto);
         }
 
         [HttpPut("{id}")]
@@ -84,16 +77,13 @@ namespace DesafioSGP.API.Controllers
                 return NotFound();
             }
 
-            // Mapear os dados do DTO para a entidade
             _mapper.Map(projetoDto, projetoParaAtualizar);
 
-            // Atualizar a entidade no contexto de dados
             await _projetoRepository.UpdateAsync(projetoParaAtualizar);
 
-            return NoContent(); // Ou outro código de resposta adequado
+            return NoContent();
         }
 
-        // DELETE: api/projeto/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletarProjeto(int id)
         {
