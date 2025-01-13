@@ -3,93 +3,116 @@ using DesafioSGP.Domain.Entities;
 using DesafioSGP.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
+using System;
+using DesafioSGP.Domain.Interfaces;
+using DesafioSGP.Infrastructure.Repositories;
 
-namespace DesafioSGP.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class TarefasController : ControllerBase
+namespace DesafioSGP.Controllers
 {
-    private readonly TarefaService _tarefaService;
-    private readonly IMapper _mapper;
-
-    public TarefasController(TarefaService tarefaService, IMapper mapper)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TarefasController : ControllerBase
     {
-        _tarefaService = tarefaService;
-        _mapper = mapper;
-    }
+        private readonly TarefaService _tarefaService;
+        private readonly IMapper _mapper;
 
-    [HttpGet]
-    public async Task<IActionResult> ObterTodas()
-    {
-        var tarefas = await _tarefaService.ObterTodasTarefas();
-        return Ok(tarefas);
-    }
+        private readonly ITarefaRepository _tarefaRepository;
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<TarefaDTO>> GetTarefaById(int id)
-    {
-        var tarefa = await _tarefaService.ObterTarefaPorId(id);
-        if (tarefa == null)
+        public TarefasController(TarefaService tarefaService, IMapper mapper, ITarefaRepository tarefaRepository)
         {
-            return NotFound();
-        }
-        var tarefaDTO = _mapper.Map<TarefaDTO>(tarefa);
-        return Ok(tarefaDTO);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Adicionar([FromBody] TarefaRequestDTO tarefaRequest)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
+            _tarefaService = tarefaService;
+            _tarefaRepository = tarefaRepository;
+            _mapper = mapper;
         }
 
-        var tarefa = _tarefaService.CriarTarefaFromDTO(tarefaRequest);
-
-        await _tarefaService.AdicionarTarefa(tarefa);
-
-        return CreatedAtAction(nameof(GetTarefaById), new { id = tarefa.Id }, tarefa);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> AtualizarTarefa(int id, [FromBody] TarefaPUTDTO tarefaPUTDTO)
-    {
-        if (tarefaPUTDTO == null)
+        [HttpGet]
+        public async Task<IActionResult> ObterTodas()
         {
-            return BadRequest("Dados inválidos.");
+            var tarefas = await _tarefaService.ObterTodasTarefas();
+            var tarefasDTO = _mapper.Map<List<TarefaDTO>>(tarefas);
+            return Ok(tarefasDTO);
         }
 
-        var tarefa = _mapper.Map<Tarefa>(tarefaPUTDTO);
-
-        if (tarefa == null)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<TarefaDTO>> GetTarefaById(int id)
         {
-            return NotFound("Tarefa não encontrada.");
+            var tarefa = await _tarefaService.ObterTarefaPorId(id);
+            if (tarefa == null)
+            {
+                return NotFound();
+            }
+            var tarefaDTO = _mapper.Map<TarefaDTO>(tarefa);
+            return Ok(tarefaDTO);
         }
 
-        var tarefaExistente = await _tarefaService.ObterTarefaPorId(id);
-        if (tarefaExistente == null)
+        [HttpPost]
+        public async Task<IActionResult> Adicionar([FromBody] TarefaRequestDTO tarefaRequest)
         {
-            return NotFound("Tarefa não encontrada.");
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Garantir que a DataPrazo está em UTC
+            DateTime? dataPrazoUtc = null;
+            if (tarefaRequest.DataPrazo.HasValue)
+            {
+                dataPrazoUtc = tarefaRequest.DataPrazo.Value.ToUniversalTime(); // Convertendo para UTC
+            }
+
+            var tarefa = new Tarefa
+            {
+                Descricao = tarefaRequest.Descricao,
+                ProjetoId = tarefaRequest.ProjetoId,
+                DataPrazo = dataPrazoUtc, // Usando a data em UTC
+                Status = tarefaRequest.Status
+            };
+
+            await _tarefaService.AdicionarTarefa(tarefa);
+
+            // Retornando o resultado após a criação
+            var tarefaDTO = _mapper.Map<TarefaDTO>(tarefa);
+            return CreatedAtAction(nameof(GetTarefaById), new { id = tarefa.Id }, tarefaDTO);
         }
 
-        tarefa.Id = id; // Garantindo que o Id da tarefa seja mantido
-        await _tarefaService.AtualizarTarefa(tarefa);
-
-        return Ok("Tarefa atualizada com sucesso.");
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Remover(int id)
-    {
-        var tarefaExistente = await _tarefaService.ObterTarefaPorId(id);
-        if (tarefaExistente == null)
+        [HttpPut("{id}")]
+        public async Task<ActionResult> AtualizarTarefa(int id, TarefaRequestDTO tarefaRequest)
         {
-            return NotFound("Tarefa não encontrada.");
+            // Convertendo para UTC
+            if (tarefaRequest.DataPrazo.HasValue)
+            {
+                tarefaRequest.DataPrazo = tarefaRequest.DataPrazo.Value.ToUniversalTime();
+            }
+
+            // Verificando se a tarefa existe no banco
+            var tarefaExistente = await _tarefaRepository.ObterPorId(id);
+            if (tarefaExistente == null)
+            {
+                return NotFound(); // Retorna 404 se a tarefa não for encontrada
+            }
+
+            // Atualizando os campos da tarefa existente com os dados novos
+            tarefaExistente.Descricao = tarefaRequest.Descricao;
+            tarefaExistente.ProjetoId = tarefaRequest.ProjetoId;
+            tarefaExistente.DataPrazo = tarefaRequest.DataPrazo;
+            tarefaExistente.Status = tarefaRequest.Status;
+
+            // Chamada para atualizar a tarefa no repositório
+            await _tarefaRepository.Atualizar(tarefaExistente);
+            return Ok(tarefaExistente); // Retorna a tarefa atualizada
         }
 
-        await _tarefaService.RemoverTarefa(id);
-        return NoContent();
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Remover(int id)
+        {
+            var tarefaExistente = await _tarefaService.ObterTarefaPorId(id);
+            if (tarefaExistente == null)
+            {
+                return NotFound("Tarefa não encontrada.");
+            }
+
+            await _tarefaService.RemoverTarefa(id);
+            return NoContent();
+        }
     }
 }
