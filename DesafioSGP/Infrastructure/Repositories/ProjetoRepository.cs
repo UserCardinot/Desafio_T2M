@@ -18,7 +18,7 @@ namespace DesafioSGP.Infrastructure.Repositories
             return await _context.Projetos.ToListAsync();
         }
 
-        public async Task<Projeto> GetByIdAsync(int id)
+        public async Task<Projeto> GetByIdAsync(Guid id) // Usando Guid ao invés de int
         {
             return await _context.Projetos.FindAsync(id);
         }

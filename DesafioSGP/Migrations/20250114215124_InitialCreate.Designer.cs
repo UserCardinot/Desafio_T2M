@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DesafioSGP.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250114194501_InitialCreate")]
+    [Migration("20250114215124_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -55,23 +55,19 @@ namespace DesafioSGP.Migrations
 
             modelBuilder.Entity("DesafioSGP.Domain.Entities.Tarefa", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("DataPrazo")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Descricao")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
-                    b.Property<int>("ProjetoId")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("ProjetoId1")
+                    b.Property<Guid>("ProjetoId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Status")
@@ -80,7 +76,7 @@ namespace DesafioSGP.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProjetoId1");
+                    b.HasIndex("ProjetoId");
 
                     b.ToTable("tarefas");
                 });
@@ -299,7 +295,7 @@ namespace DesafioSGP.Migrations
                 {
                     b.HasOne("DesafioSGP.Domain.Entities.Projeto", "Projeto")
                         .WithMany("Tarefas")
-                        .HasForeignKey("ProjetoId1")
+                        .HasForeignKey("ProjetoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

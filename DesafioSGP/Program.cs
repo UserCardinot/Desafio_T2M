@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using DesafioSGP.Domain.Entities;
+using AutoMapper;
+using DesafioSGP.Application.Mappings;  // Adicione a importação para o AutoMapper
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,19 +24,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Registrando os repositórios e serviços
 builder.Services.AddScoped<IUsersRepository, UserRepository>();
-builder.Services.AddScoped<IProjetoRepository, ProjetoRepository>();
-builder.Services.AddScoped<ITarefaRepository, TarefaRepository>();
+builder.Services.AddScoped<IProjetoRepository, ProjetoRepository>();  // Mantém o repositório de Projeto
 
 builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<ProjetoService>();
-builder.Services.AddScoped<TarefaService>();
+builder.Services.AddScoped<ProjetoService>();  // Mantém o serviço de Projeto
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<JwtUtils>();
 
 builder.Services.AddAutoMapper(config =>
 {
-    config.AddProfile<ProjetoProfile>();
+    config.AddProfile<ProjetoProfile>();  // Configuração do AutoMapper para Projeto
 }, AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddCors(options =>
@@ -45,9 +45,11 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod());
 });
 
+// Configuração do JSON para evitar ciclos de objetos
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve; // Previne ciclos
         options.JsonSerializerOptions.Converters.Add(new JsonDateOnlyConverter());
     });
 
@@ -84,7 +86,6 @@ if (string.IsNullOrEmpty(jwtSettings["Secret"]) ||
 {
     throw new InvalidOperationException("Configurações JWT estão incompletas ou ausentes.");
 }
-
 
 var key = builder.Configuration["Jwt:Secret"];
 if (string.IsNullOrEmpty(key))

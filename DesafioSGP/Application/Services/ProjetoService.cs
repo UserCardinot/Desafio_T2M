@@ -1,49 +1,41 @@
-using AutoMapper;
-using DesafioSGP.Application.DTOs;
 using DesafioSGP.Domain.Entities;
 using DesafioSGP.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace DesafioSGP.Application.Services
 {
     public class ProjetoService
     {
         private readonly IProjetoRepository _projetoRepository;
-        private readonly IMapper _mapper;
+        private readonly ApplicationDbContext _context;
 
-        public ProjetoService(IProjetoRepository projetoRepository, IMapper mapper)
+        public ProjetoService(IProjetoRepository projetoRepository, ApplicationDbContext context)
         {
             _projetoRepository = projetoRepository;
-            _mapper = mapper;
+            _context = context;
         }
 
-        public async Task<ProjetoDTO> GetProjetoByIdAsync(int id)
+        public async Task<List<Projeto>> GetAllProjetosAsync()
         {
-            var projeto = await _projetoRepository.GetByIdAsync(id);
-            return _mapper.Map<ProjetoDTO>(projeto);
+            var projetos = await _context.Projetos
+                .Include(p => p.Tarefas)
+                .ToListAsync();
+            return projetos;
         }
 
-        public async Task<List<ProjetoDTO>> GetProjetosAsync()
+        public async Task<Projeto> GetProjetoByIdAsync(Guid id)
         {
-            var projetos = await _projetoRepository.GetAllAsync();
-            return _mapper.Map<List<ProjetoDTO>>(projetos);
+            return await _projetoRepository.GetByIdAsync(id);
         }
 
-        public async Task CreateProjetoAsync(ProjetoDTO projetoDto, string userId)
+        public async Task AddProjetoAsync(Projeto projeto)
         {
-            var projeto = _mapper.Map<Projeto>(projetoDto);
-            projeto.UserId = Guid.Parse(userId);
             await _projetoRepository.AddAsync(projeto);
         }
 
-
-        public async Task UpdateProjetoAsync(int id, ProjetoDTO projetoDto)
+        public async Task UpdateProjetoAsync(Projeto projeto)
         {
-            var projeto = await _projetoRepository.GetByIdAsync(id);
-            if (projeto != null)
-            {
-                _mapper.Map(projetoDto, projeto);
-                await _projetoRepository.UpdateAsync(projeto);
-            }
+            await _projetoRepository.UpdateAsync(projeto);
         }
 
         public async Task DeleteProjetoAsync(Guid id)

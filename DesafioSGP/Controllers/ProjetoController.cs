@@ -5,11 +5,11 @@ using DesafioSGP.Domain.Entities;
 using DesafioSGP.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;  // Adicionado para usar o Include
 using System.Security.Claims;
 
 namespace DesafioSGP.API.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProjetoController : ControllerBase
@@ -64,7 +64,7 @@ namespace DesafioSGP.API.Controllers
                 var tarefa = new Tarefa
                 {
                     Descricao = tarefaDto.Descricao,
-                    DataPrazo = tarefaDto.Prazo,
+                    DataPrazo = tarefaDto.DataPrazo,
                     Status = tarefaDto.Status ?? "Pendente",
                     Projeto = projeto
                 };
@@ -78,10 +78,24 @@ namespace DesafioSGP.API.Controllers
             return CreatedAtAction("ObterProjeto", new { id = projeto.Id }, projeto);
         }
 
+        [HttpGet]
+        public async Task<ActionResult<List<Projeto>>> GetAllProjetos()
+        {
+            // Incluindo as tarefas ao consultar os projetos
+            var projetos = await _context.Projetos
+                                          .Include(p => p.Tarefas)  // Adiciona o carregamento das tarefas
+                                          .ToListAsync();
 
+            if (projetos == null || projetos.Count == 0)
+            {
+                return NotFound("Nenhum projeto encontrado.");
+            }
+
+            return Ok(projetos);
+        }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> ObterProjeto(int id)
+        public async Task<IActionResult> ObterProjeto(Guid id)
         {
             var projeto = await _projetoRepository.GetByIdAsync(id);
 
@@ -94,22 +108,8 @@ namespace DesafioSGP.API.Controllers
             return Ok(projetoDto);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllProjects()
-        {
-            var projetos = await _projetoRepository.GetAllAsync();
-
-            if (!projetos.Any())
-            {
-                return Ok(new List<ProjetoDTO>());
-            }
-
-            var projetosDto = _mapper.Map<IEnumerable<ProjetoDTO>>(projetos);
-            return Ok(projetosDto);
-        }
-
         [HttpPut("{id}")]
-        public async Task<IActionResult> AtualizarProjeto(int id, ProjetoPUTDTO projetoDto)
+        public async Task<IActionResult> AtualizarProjeto(Guid id, ProjetoPUTDTO projetoDto)
         {
             var projetoParaAtualizar = await _projetoRepository.GetByIdAsync(id);
 
@@ -125,7 +125,7 @@ namespace DesafioSGP.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletarProjeto(int id)
+        public async Task<IActionResult> DeletarProjeto(Guid id)
         {
             var projetoExistente = await _projetoRepository.GetByIdAsync(id);
             if (projetoExistente == null)
@@ -133,12 +133,7 @@ namespace DesafioSGP.API.Controllers
                 return NotFound(new { message = "Projeto não encontrado para exclusão." });
             }
 
-            if (!Guid.TryParse(id.ToString(), out Guid projetoId))
-            {
-                return BadRequest(new { message = "Id inválido." });
-            }
-
-            await _projetoRepository.DeleteAsync(projetoId);
+            await _projetoRepository.DeleteAsync(id);
 
             return NoContent();
         }

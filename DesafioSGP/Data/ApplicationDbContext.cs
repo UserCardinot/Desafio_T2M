@@ -12,16 +12,17 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
 
     public DbSet<Projeto> Projetos { get; set; }
     public DbSet<Tarefa> Tarefas { get; set; }
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // Relacionamento entre User e Projeto
-        modelBuilder.Entity<Projeto>()
-            .HasOne(p => p.User)
-            .WithMany(u => u.Projetos)
-            .HasForeignKey(p => p.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        // Definir explicitamente a chave estrangeira de Projeto na Tarefa
+        modelBuilder.Entity<Tarefa>()
+            .HasOne(t => t.Projeto)
+            .WithMany(p => p.Tarefas)
+            .HasForeignKey(t => t.ProjetoId)
+            .OnDelete(DeleteBehavior.Cascade);  // Defina o comportamento desejado para a exclusão
     }
 }

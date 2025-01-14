@@ -183,20 +183,18 @@ namespace DesafioSGP.Migrations
                 name: "tarefas",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Descricao = table.Column<string>(type: "text", nullable: false),
-                    ProjetoId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Descricao = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    ProjetoId = table.Column<Guid>(type: "uuid", nullable: false),
                     DataPrazo = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    ProjetoId1 = table.Column<Guid>(type: "uuid", nullable: false)
+                    Status = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_tarefas", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_tarefas_projetos_ProjetoId1",
-                        column: x => x.ProjetoId1,
+                        name: "FK_tarefas_projetos_ProjetoId",
+                        column: x => x.ProjetoId,
                         principalTable: "projetos",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -245,9 +243,9 @@ namespace DesafioSGP.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_tarefas_ProjetoId1",
+                name: "IX_tarefas_ProjetoId",
                 table: "tarefas",
-                column: "ProjetoId1");
+                column: "ProjetoId");
         }
 
         /// <inheritdoc />

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System;
 
 namespace DesafioSGP.Domain.Entities
 {
@@ -7,6 +8,7 @@ namespace DesafioSGP.Domain.Entities
     public class Projeto
     {
         public Guid Id { get; set; }
+
         [Required(ErrorMessage = "O Nome do Projeto é obrigatório")]
         [MaxLength(100)]
         public string Nome { get; set; }
@@ -14,10 +16,12 @@ namespace DesafioSGP.Domain.Entities
         [Required(ErrorMessage = "A Descrição do Projeto é obrigatória")]
         [MaxLength(500)]
         public string Descricao { get; set; }
+
         public DateTime? Prazo { get; set; }
 
         public Guid UserId { get; set; }
         public User User { get; set; }
+
         public List<Tarefa> Tarefas { get; set; } = new List<Tarefa>();
     }
 }
