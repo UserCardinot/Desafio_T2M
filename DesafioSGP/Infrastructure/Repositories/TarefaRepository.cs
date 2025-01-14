@@ -1,4 +1,3 @@
-using DesafioSGP.Data;
 using DesafioSGP.Domain.Entities;
 using DesafioSGP.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;

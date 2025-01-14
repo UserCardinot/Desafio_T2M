@@ -1,4 +1,3 @@
-using DesafioSGP.Data;
 using DesafioSGP.Domain.Entities;
 using DesafioSGP.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -36,7 +35,7 @@ namespace DesafioSGP.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var projeto = await _context.Projetos.FindAsync(id);
             if (projeto != null)
@@ -46,7 +45,7 @@ namespace DesafioSGP.Infrastructure.Repositories
             }
         }
 
-        public async Task<IEnumerable<Projeto>> GetProjetosByUserIdAsync(int userId)
+        public async Task<IEnumerable<Projeto>> GetProjetosByUserIdAsync(Guid userId)
         {
             return await _context.Projetos
                                  .Where(p => p.UserId == userId)

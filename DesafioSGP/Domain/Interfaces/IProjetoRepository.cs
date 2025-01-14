@@ -1,6 +1,4 @@
 using DesafioSGP.Domain.Entities;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace DesafioSGP.Domain.Interfaces
 {
@@ -10,7 +8,7 @@ namespace DesafioSGP.Domain.Interfaces
         Task<List<Projeto>> GetAllAsync();
         Task AddAsync(Projeto projeto);
         Task UpdateAsync(Projeto projeto);
-        Task DeleteAsync(int id);
-        Task<IEnumerable<Projeto>> GetProjetosByUserIdAsync(int userId);
+        Task DeleteAsync(Guid id);
+        Task<IEnumerable<Projeto>> GetProjetosByUserIdAsync(Guid userId);
     }
 }

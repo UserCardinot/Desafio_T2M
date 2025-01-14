@@ -1,16 +1,15 @@
 using DesafioSGP.Domain.Entities;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace DesafioSGP.Domain.Interfaces
 {
     public interface IUsersRepository
     {
         Task<IEnumerable<User>> ObterTodos();
-        Task<User?> ObterPorId(int id);
+        Task<User?> ObterPorId(Guid id);
         Task<User?> ObterPorEmail(string email);
+        Task<User?> ObterPorNome(string username);
         Task Adicionar(User user);
         Task Atualizar(User user);
-        Task Remover(int id);
+        Task Remover(Guid id);
     }
 }

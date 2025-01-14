@@ -23,7 +23,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> ObterPorId(int id)
+    public async Task<IActionResult> ObterPorId(Guid id)
     {
         var usuario = await _userService.ObterUsuarioPorId(id);
         if (usuario == null)
@@ -41,9 +41,9 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Atualizar(int id, User user)
+    public async Task<IActionResult> Atualizar(string id, User user)
     {
-        if (id != user.Id)
+        if (!Guid.TryParse(id, out Guid guidId) || guidId != user.Id)
         {
             return BadRequest();
         }
@@ -52,7 +52,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Remover(int id)
+    public async Task<IActionResult> Remover(Guid id)
     {
         await _userService.RemoverUsuario(id);
         return NoContent();

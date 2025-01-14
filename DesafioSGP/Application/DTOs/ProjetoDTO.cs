@@ -1,13 +1,15 @@
+using DesafioSGP.Application.DTOs;
 using DesafioSGP.Domain.Entities;
+using System.ComponentModel.DataAnnotations; // Necessário para a anotação Required
 
 public class ProjetoDTO
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Nome { get; set; }
     public string Descricao { get; set; }
-    public DateOnly? Prazo { get; set; }
-    public int UserId { get; set; }
-    public List<int> TarefaIds { get; set; } = new List<int>();
+    public DateTime? Prazo { get; set; }
+    public Guid UserId { get; set; }
+    public List<TarefaDTO> Tarefas { get; set; } = new List<TarefaDTO>();
 
     public static ProjetoDTO FromProjeto(Projeto projeto)
     {
@@ -16,9 +18,10 @@ public class ProjetoDTO
             Id = projeto.Id,
             Nome = projeto.Nome,
             Descricao = projeto.Descricao,
-            Prazo = projeto.Prazo,
+            Prazo = projeto.Prazo?.ToUniversalTime(),
             UserId = projeto.UserId,
-            TarefaIds = projeto.Tarefas?.Select(t => t.Id).ToList() ?? new List<int>()
+            Tarefas = projeto.Tarefas?.Select(t => TarefaDTO.FromTarefa(t)).ToList() ?? new List<TarefaDTO>()
         };
     }
 }
+

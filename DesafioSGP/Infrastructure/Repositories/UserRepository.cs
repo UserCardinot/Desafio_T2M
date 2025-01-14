@@ -1,4 +1,3 @@
-using DesafioSGP.Data;
 using DesafioSGP.Domain.Entities;
 using DesafioSGP.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -21,14 +20,27 @@ namespace DesafioSGP.Infrastructure.Repositories
             return await _context.Users.ToListAsync();
         }
 
-        public async Task<User?> ObterPorId(int id)
+        public async Task<User?> ObterPorId(Guid id)  // Atualizado para Guid
         {
-            return await _context.Users.FindAsync(id);
+            return await _context.Users.FindAsync(id);  // Busca pelo Guid
         }
 
         public async Task<User?> ObterPorEmail(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            try
+            {
+                return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao buscar usuário por email: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<User?> ObterPorNome(string username)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Name == username);
         }
 
         public async Task Adicionar(User user)
@@ -43,7 +55,7 @@ namespace DesafioSGP.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task Remover(int id)
+        public async Task Remover(Guid id)  // Atualizado para Guid
         {
             var user = await _context.Users.FindAsync(id);
 
@@ -52,15 +64,23 @@ namespace DesafioSGP.Infrastructure.Repositories
                 throw new InvalidOperationException("Usuário não encontrado.");
             }
 
-            var projetos = await _projetoRepository.GetProjetosByUserIdAsync(id);
-
-            foreach (var projeto in projetos)
+            try
             {
-                await _projetoRepository.DeleteAsync(projeto.Id);
-            }
+                var projetos = await _projetoRepository.GetProjetosByUserIdAsync(id);
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+                foreach (var projeto in projetos)
+                {
+                    await _projetoRepository.DeleteAsync(projeto.Id);
+                }
+
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Erro ao remover usuário: {ex.Message}", ex);
+            }
         }
+
     }
 }

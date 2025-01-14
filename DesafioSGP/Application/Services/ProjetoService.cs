@@ -28,11 +28,13 @@ namespace DesafioSGP.Application.Services
             return _mapper.Map<List<ProjetoDTO>>(projetos);
         }
 
-        public async Task CreateProjetoAsync(ProjetoDTO projetoDto)
+        public async Task CreateProjetoAsync(ProjetoDTO projetoDto, string userId)
         {
             var projeto = _mapper.Map<Projeto>(projetoDto);
+            projeto.UserId = Guid.Parse(userId);
             await _projetoRepository.AddAsync(projeto);
         }
+
 
         public async Task UpdateProjetoAsync(int id, ProjetoDTO projetoDto)
         {
@@ -44,7 +46,7 @@ namespace DesafioSGP.Application.Services
             }
         }
 
-        public async Task DeleteProjetoAsync(int id)
+        public async Task DeleteProjetoAsync(Guid id)
         {
             await _projetoRepository.DeleteAsync(id);
         }

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using System;
 using DesafioSGP.Domain.Interfaces;
-using DesafioSGP.Infrastructure.Repositories;
 
 namespace DesafioSGP.Controllers
 {
@@ -63,7 +62,7 @@ namespace DesafioSGP.Controllers
             {
                 Descricao = tarefaRequest.Descricao,
                 ProjetoId = tarefaRequest.ProjetoId,
-                DataPrazo = dataPrazoUtc, // Usando a data em UTC
+                DataPrazo = dataPrazoUtc,
                 Status = tarefaRequest.Status
             };
 

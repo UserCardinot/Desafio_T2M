@@ -1,41 +1,84 @@
 using AutoMapper;
 using DesafioSGP.Application.DTOs;
+using DesafioSGP.Application.Services;
 using DesafioSGP.Domain.Entities;
 using DesafioSGP.Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace DesafioSGP.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProjetoController : ControllerBase
     {
         private readonly IProjetoRepository _projetoRepository;
         private readonly IMapper _mapper;
+        private readonly ProjetoService _projetoService;
+        private readonly ApplicationDbContext _context;
 
-        public ProjetoController(IProjetoRepository projetoRepository, IMapper mapper)
+        public ProjetoController(IProjetoRepository projetoRepository, IMapper mapper, ProjetoService projetoService, ApplicationDbContext context)
         {
             _projetoRepository = projetoRepository;
             _mapper = mapper;
+            _projetoService = projetoService;
+            _context = context;
         }
 
         [HttpPost]
-        public async Task<IActionResult> CriarProjeto([FromBody] ProjetoPUTDTO projetoDto)
+        public async Task<IActionResult> CriarProjeto([FromBody] ProjetoDTO projetoDto)
         {
-            if (projetoDto == null)
+            if (projetoDto == null || string.IsNullOrWhiteSpace(projetoDto.Nome) || string.IsNullOrWhiteSpace(projetoDto.Descricao))
             {
-                return BadRequest("Dados do projeto inválidos.");
+                return BadRequest(new { Message = "Nome e descrição são obrigatórios." });
             }
 
-            var projeto = _mapper.Map<Projeto>(projetoDto);
+            if (projetoDto.Prazo.HasValue && projetoDto.Prazo <= DateTime.UtcNow)
+            {
+                return BadRequest(new { Message = "O prazo deve ser uma data futura." });
+            }
 
-            await _projetoRepository.AddAsync(projeto);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+            {
+                return Unauthorized(new { Message = "Usuário não autenticado ou UserId inválido." });
+            }
 
-            var projetoResponse = _mapper.Map<ProjetoDTO>(projeto);
+            var projeto = new Projeto
+            {
+                Nome = projetoDto.Nome,
+                Descricao = projetoDto.Descricao,
+                Prazo = projetoDto.Prazo?.ToUniversalTime(),
+                UserId = userId
+            };
 
-            return CreatedAtAction(nameof(ObterProjeto), new { id = projeto.Id }, projetoResponse);
+            foreach (var tarefaDto in projetoDto.Tarefas)
+            {
+                if (string.IsNullOrWhiteSpace(tarefaDto.Descricao))
+                {
+                    return BadRequest(new { Message = "Tarefas devem ter uma descrição válida." });
+                }
+
+                var tarefa = new Tarefa
+                {
+                    Descricao = tarefaDto.Descricao,
+                    DataPrazo = tarefaDto.Prazo,
+                    Status = tarefaDto.Status ?? "Pendente",
+                    Projeto = projeto
+                };
+
+                projeto.Tarefas.Add(tarefa);
+            }
+
+            _context.Projetos.Add(projeto);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("ObterProjeto", new { id = projeto.Id }, projeto);
         }
+
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> ObterProjeto(int id)
@@ -44,7 +87,7 @@ namespace DesafioSGP.API.Controllers
 
             if (projeto == null)
             {
-                return NotFound();
+                return NotFound(new { message = "Projeto não encontrado." });
             }
 
             var projetoDto = _mapper.Map<ProjetoDTO>(projeto);
@@ -56,14 +99,12 @@ namespace DesafioSGP.API.Controllers
         {
             var projetos = await _projetoRepository.GetAllAsync();
 
-            if (projetos == null || !projetos.Any())
+            if (!projetos.Any())
             {
-                return NotFound();
+                return Ok(new List<ProjetoDTO>());
             }
 
-            // Mapear para o DTO de resposta
             var projetosDto = _mapper.Map<IEnumerable<ProjetoDTO>>(projetos);
-
             return Ok(projetosDto);
         }
 
@@ -74,11 +115,10 @@ namespace DesafioSGP.API.Controllers
 
             if (projetoParaAtualizar == null)
             {
-                return NotFound();
+                return NotFound(new { message = "Projeto não encontrado para atualização." });
             }
 
             _mapper.Map(projetoDto, projetoParaAtualizar);
-
             await _projetoRepository.UpdateAsync(projetoParaAtualizar);
 
             return NoContent();
@@ -90,10 +130,15 @@ namespace DesafioSGP.API.Controllers
             var projetoExistente = await _projetoRepository.GetByIdAsync(id);
             if (projetoExistente == null)
             {
-                return NotFound();
+                return NotFound(new { message = "Projeto não encontrado para exclusão." });
             }
 
-            await _projetoRepository.DeleteAsync(id);
+            if (!Guid.TryParse(id.ToString(), out Guid projetoId))
+            {
+                return BadRequest(new { message = "Id inválido." });
+            }
+
+            await _projetoRepository.DeleteAsync(projetoId);
 
             return NoContent();
         }

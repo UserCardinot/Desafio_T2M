@@ -17,7 +17,7 @@ public class UserService
         return await _userRepository.ObterTodos();
     }
 
-    public async Task<User?> ObterUsuarioPorId(int id)
+    public async Task<User?> ObterUsuarioPorId(Guid id)
     {
         return await _userRepository.ObterPorId(id);
     }
@@ -37,7 +37,7 @@ public class UserService
         await _userRepository.Atualizar(user);
     }
 
-    public async Task RemoverUsuario(int id)
+    public async Task RemoverUsuario(Guid id)
     {
         await _userRepository.Remover(id);
     }
