@@ -10,6 +10,6 @@ namespace DesafioSGP.Application.DTOs
         public string Descricao { get; set; }
         public DateTime? Prazo { get; set; }
         public Guid UserId { get; set; }
-        public List<TarefaDTO> Tarefas { get; set; }
+        public List<TarefaDTO>? Tarefas { get; set; }
     }
 }

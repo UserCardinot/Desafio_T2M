@@ -18,5 +18,10 @@ namespace DesafioSGP.Domain.Entities
         public DateTime? DataPrazo { get; set; }
         public string Status { get; set; }
         public Projeto Projeto { get; set; }
+
+        public void SetDataPrazo(DateTime data)
+        {
+            DataPrazo = data.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(data, DateTimeKind.Utc) : data;
+        }
     }
 }

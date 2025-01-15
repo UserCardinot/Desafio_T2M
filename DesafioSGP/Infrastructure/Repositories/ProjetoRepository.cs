@@ -44,12 +44,5 @@ namespace DesafioSGP.Infrastructure.Repositories
                 await _context.SaveChangesAsync();
             }
         }
-
-        public async Task<IEnumerable<Projeto>> GetProjetosByUserIdAsync(Guid userId)
-        {
-            return await _context.Projetos
-                                 .Where(p => p.UserId == userId)
-                                 .ToListAsync();
-        }
     }
 }

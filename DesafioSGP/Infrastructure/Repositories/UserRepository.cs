@@ -66,13 +66,6 @@ namespace DesafioSGP.Infrastructure.Repositories
 
             try
             {
-                var projetos = await _projetoRepository.GetProjetosByUserIdAsync(id);
-
-                foreach (var projeto in projetos)
-                {
-                    await _projetoRepository.DeleteAsync(projeto.Id);
-                }
-
                 _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
             }
@@ -81,6 +74,5 @@ namespace DesafioSGP.Infrastructure.Repositories
                 throw new InvalidOperationException($"Erro ao remover usuário: {ex.Message}", ex);
             }
         }
-
     }
 }

@@ -8,5 +8,6 @@ namespace DesafioSGP.Application.DTOs
         public string Descricao { get; set; }
         public DateTime? DataPrazo { get; set; }
         public string Status { get; set; }
+        public string Nome { get; set; }
     }
 }

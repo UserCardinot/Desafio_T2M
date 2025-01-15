@@ -19,9 +19,6 @@ namespace DesafioSGP.Domain.Entities
 
         public DateTime? Prazo { get; set; }
 
-        public Guid UserId { get; set; }
-        public User User { get; set; }
-
         public List<Tarefa> Tarefas { get; set; } = new List<Tarefa>();
     }
 }

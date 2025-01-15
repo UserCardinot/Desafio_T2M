@@ -3,9 +3,9 @@ using DesafioSGP.Application.DTOs;
 using DesafioSGP.Application.Services;
 using DesafioSGP.Domain.Entities;
 using DesafioSGP.Domain.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;  // Adicionado para usar o Include
+using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Security.Claims;
 
 namespace DesafioSGP.API.Controllers
@@ -30,52 +30,42 @@ namespace DesafioSGP.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CriarProjeto([FromBody] ProjetoDTO projetoDto)
         {
-            if (projetoDto == null || string.IsNullOrWhiteSpace(projetoDto.Nome) || string.IsNullOrWhiteSpace(projetoDto.Descricao))
+            if (projetoDto == null)
             {
-                return BadRequest(new { Message = "Nome e descrição são obrigatórios." });
+                return BadRequest("Dados inválidos.");
             }
 
-            if (projetoDto.Prazo.HasValue && projetoDto.Prazo <= DateTime.UtcNow)
-            {
-                return BadRequest(new { Message = "O prazo deve ser uma data futura." });
-            }
-
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
-            {
-                return Unauthorized(new { Message = "Usuário não autenticado ou UserId inválido." });
-            }
+            // Garantindo que as datas sejam salvas como UTC
+            var prazoUtc = projetoDto.Prazo.HasValue ? projetoDto.Prazo.Value.ToUniversalTime() : (DateTime?)null;
 
             var projeto = new Projeto
             {
                 Nome = projetoDto.Nome,
                 Descricao = projetoDto.Descricao,
-                Prazo = projetoDto.Prazo?.ToUniversalTime(),
-                UserId = userId
+                Prazo = prazoUtc,  // Salvando em UTC
+                Tarefas = projetoDto.Tarefas.Select(t => new Tarefa
+                {
+                    Descricao = t.Descricao,
+                    DataPrazo = t.DataPrazo.HasValue ? t.DataPrazo.Value.ToUniversalTime() : (DateTime?)null,
+                    Status = t.Status,
+                    Nome = t.Nome ?? "Tarefa sem nome"
+                }).ToList()
             };
 
-            foreach (var tarefaDto in projetoDto.Tarefas)
+            try
             {
-                if (string.IsNullOrWhiteSpace(tarefaDto.Descricao))
-                {
-                    return BadRequest(new { Message = "Tarefas devem ter uma descrição válida." });
-                }
-
-                var tarefa = new Tarefa
-                {
-                    Descricao = tarefaDto.Descricao,
-                    DataPrazo = tarefaDto.DataPrazo,
-                    Status = tarefaDto.Status ?? "Pendente",
-                    Projeto = projeto
-                };
-
-                projeto.Tarefas.Add(tarefa);
+                await _context.Projetos.AddAsync(projeto);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction(nameof(ObterProjeto), new { id = projeto.Id }, projeto);
             }
-
-            _context.Projetos.Add(projeto);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("ObterProjeto", new { id = projeto.Id }, projeto);
+            catch (DbUpdateException dbEx)
+            {
+                return StatusCode(500, $"Erro ao acessar o banco de dados: {dbEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao criar o projeto: {ex.Message}");
+            }
         }
 
         [HttpGet]

@@ -11,7 +11,6 @@ namespace DesafioSGP.Domain.Interfaces
         Task<List<Projeto>> GetAllAsync();
         Task AddAsync(Projeto projeto);
         Task UpdateAsync(Projeto projeto);
-        Task DeleteAsync(Guid id); // Alterando o tipo do ID para Guid
-        Task<IEnumerable<Projeto>> GetProjetosByUserIdAsync(Guid userId);
+        Task DeleteAsync(Guid id);
     }
 }
