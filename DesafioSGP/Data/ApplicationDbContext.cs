@@ -18,11 +18,10 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
     {
         base.OnModelCreating(modelBuilder);
 
-        // Definir explicitamente a chave estrangeira de Projeto na Tarefa
         modelBuilder.Entity<Tarefa>()
             .HasOne(t => t.Projeto)
             .WithMany(p => p.Tarefas)
             .HasForeignKey(t => t.ProjetoId)
-            .OnDelete(DeleteBehavior.Cascade);  // Defina o comportamento desejado para a exclusão
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

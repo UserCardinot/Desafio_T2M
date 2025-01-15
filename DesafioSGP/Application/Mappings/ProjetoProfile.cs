@@ -13,6 +13,12 @@ namespace DesafioSGP.Application.Mappings
 
             CreateMap<ProjetoDTO, Projeto>()
                 .ForMember(dest => dest.Tarefas, opt => opt.MapFrom(src => src.Tarefas));
+
+            // Mapeamento do ProjetoPUTDTO para Projeto
+            CreateMap<ProjetoPUTDTO, Projeto>()
+                .ForMember(dest => dest.Prazo, opt => opt.MapFrom(src => src.Prazo.HasValue ? src.Prazo.Value.ToUniversalTime() : (DateTime?)null))
+                .ForMember(dest => dest.Tarefas, opt => opt.MapFrom(src => src.Tarefas))
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
         }
     }
 }

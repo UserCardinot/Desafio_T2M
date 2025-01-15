@@ -99,17 +99,67 @@ namespace DesafioSGP.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> AtualizarProjeto(Guid id, ProjetoPUTDTO projetoDto)
+        public IActionResult AtualizarProjeto(Guid id, ProjetoPUTDTO projetoDto)
         {
-            var projetoParaAtualizar = await _projetoRepository.GetByIdAsync(id);
+            var projeto = _context.Projetos.FirstOrDefault(p => p.Id == id);
 
-            if (projetoParaAtualizar == null)
+            if (projeto == null)
             {
-                return NotFound(new { message = "Projeto não encontrado para atualização." });
+                return NotFound();
             }
 
-            _mapper.Map(projetoDto, projetoParaAtualizar);
-            await _projetoRepository.UpdateAsync(projetoParaAtualizar);
+            projeto.Nome = projetoDto.Nome;
+            projeto.Descricao = projetoDto.Descricao;
+
+            if (projetoDto.Prazo.HasValue)
+            {
+                projeto.Prazo = projetoDto.Prazo.Value.ToUniversalTime();
+            }
+
+            if (projetoDto.Tarefas != null && projetoDto.Tarefas.Any())
+            {
+                foreach (var tarefaDto in projetoDto.Tarefas)
+                {
+                    var tarefa = projeto.Tarefas.FirstOrDefault(t => t.Id == tarefaDto.Id);
+
+                    if (tarefa != null)
+                    {
+                        tarefa.Nome = tarefaDto.Nome ?? tarefa.Nome;
+                        tarefa.Descricao = tarefaDto.Descricao ?? tarefa.Descricao;
+
+                        if (tarefaDto.DataPrazo.HasValue)
+                        {
+                            tarefa.DataPrazo = tarefaDto.DataPrazo.Value.ToUniversalTime();
+                        }
+
+                        tarefa.Status = tarefaDto.Status;
+                    }
+                    else
+                    {
+                        var novaTarefa = new Tarefa
+                        {
+                            Nome = tarefaDto.Nome ?? "Tarefa sem nome",
+                            Descricao = tarefaDto.Descricao,
+                            DataPrazo = tarefaDto.DataPrazo?.ToUniversalTime(),
+                            Status = tarefaDto.Status
+                        };
+                        projeto.Tarefas.Add(novaTarefa);
+                    }
+                }
+            }
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException dbEx)
+            {
+                return StatusCode(500, $"Erro ao acessar o banco de dados: {dbEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao atualizar o projeto: {ex.Message}");
+            }
 
             return NoContent();
         }

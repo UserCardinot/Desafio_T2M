@@ -35,8 +35,14 @@ namespace DesafioSGP.Application.Services
 
         public async Task UpdateProjetoAsync(Projeto projeto)
         {
+            if (projeto.Prazo.HasValue)
+            {
+                projeto.Prazo = projeto.Prazo.Value.ToUniversalTime();
+            }
+
             await _projetoRepository.UpdateAsync(projeto);
         }
+
 
         public async Task DeleteProjetoAsync(Guid id)
         {
